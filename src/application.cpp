@@ -4,10 +4,9 @@
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <imgui.h>
+#include "user.hpp"
 
 Application::Application() {
- 
-
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         std::cerr << "Error: " << SDL_GetError() <<std::endl;
         m_exit_status = 1;
@@ -42,22 +41,7 @@ int Application::run() {
 
     ImGui_ImplSDLRenderer_Init(m_window->get_native_renderer());
 
-    // // Get proper display scaling for high DPI displays
-    // const float font_scaling_factor{m_window->get_scale()};
-
-    // // Font size will be 18pt
-    // const float font_size{18.0F * font_scaling_factor};
-
-    // // Load font and set as default with proper scaling
-    // io.Fonts->AddFontFromFileTTF(
-    //     "fonts/Manrope.ttf",
-    //     font_size
-    // );
-    // io.FontDefault = io.Fonts->AddFontFromFileTTF(
-    //     "fonts/Manrope.ttf",
-    //     font_size
-    // );
-    // io.FontGlobalScale = 1.0F / font_scaling_factor;
+    User user{"sanson", "1234"};
 
     m_running = true;
     while(m_running) 
@@ -82,12 +66,14 @@ int Application::run() {
         // Start the Dear ImGui frame
         ImGui_ImplSDLRenderer_NewFrame();
         ImGui_ImplSDL2_NewFrame();
+
         ImGui::NewFrame();
         
         if(!m_minimized) {
              // This is all that needs to be added for this:
             ImGui::DockSpaceOverViewport();
 
+            // Menu bar
             if(ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
                     if(ImGui::MenuItem("Exit")) {
@@ -108,8 +94,19 @@ int Application::run() {
             
             // Render "some panel".
             if (m_show_some_panel) {
-                ImGui::Begin("Some panel", &m_show_some_panel);
-                ImGui::Text("Hello World");
+                //TODO: Chnage to string in the future
+                static char buf[256] = "";
+                ImGui::Begin("Collection", &m_show_some_panel);
+                ImGui::Text("User: %s", user.getUserName().c_str());
+                for (const auto& card : user.getCollection()) {
+                    ImGui::Text("%s", card.c_str());
+                }
+                
+                ImGui::InputText("Text", buf, IM_ARRAYSIZE(buf));
+                 if (ImGui::Button("Add Card")) {
+                    user.addCard(buf);
+                }
+
                 ImGui::End();
             }
         }

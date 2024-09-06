@@ -10,6 +10,7 @@ class Application {
         int run();
         void stop();   
         void on_event(const SDL_WindowEvent& event);
+
         // Specialised events
         void on_minimize();
         void on_shown();
@@ -19,7 +20,6 @@ class Application {
         bool m_running{true};
         int m_exit_status;
 
-        // Hold reference to a window
         std::unique_ptr<Window> m_window{nullptr};
 
         bool m_show_some_panel{true};
