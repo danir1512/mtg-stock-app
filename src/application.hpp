@@ -15,6 +15,7 @@ class Application {
         void on_minimize();
         void on_shown();
         void on_close();
+        void popUpAddCard();
             
     private:
         bool m_running{true};

@@ -2,14 +2,19 @@
 #include <vector>
 #include <memory>
 
-using Collection = std::vector<std::string>;
+struct Card {
+    std::string name;
+    int value;
+};
+
+using Collection = std::vector<Card>;
 
 class User {
     public:
 
         User(const std::string userName, const std::string password);
 
-        int addCard(const std::string card);
+        int addCard(const std::string card_name, int price);
         int removeCard(const std::string card);
         auto getCollection() const -> const Collection&;
         auto getUserName() const -> const std::string { return m_userName; }

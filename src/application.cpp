@@ -94,22 +94,44 @@ int Application::run() {
             
             // Render "some panel".
             if (m_show_some_panel) {
-                //TODO: Chnage to string in the future
-                static char buf[256] = "";
+                //TODO: Change to string in the future
+                
                 ImGui::Begin("Collection", &m_show_some_panel);
                 ImGui::Text("User: %s", user.getUserName().c_str());
                 for (const auto& card : user.getCollection()) {
-                    ImGui::Text("%s", card.c_str());
+                    ImGui::Text("%s", card.name.c_str());
                 }
                 
-                ImGui::InputText("Text", buf, IM_ARRAYSIZE(buf));
-                 if (ImGui::Button("Add Card")) {
-                    user.addCard(buf);
+                if (ImGui::Button("Add Card"))
+                    ImGui::OpenPopup("Add Card");
+                
+                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+                if (ImGui::BeginPopupModal("Add Card", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                    static char buf[256] = "";
+                    ImGui::InputText("Card Name", buf, IM_ARRAYSIZE(buf));
+                    if (ImGui::Button("Add Card")) {
+                        user.addCard(buf, 0);
+                        ImGui::CloseCurrentPopup();
+                    }
+                    if(ImGui::Button("Cancel")) {
+                        ImGui::CloseCurrentPopup();  
+                    }
+                    ImGui::EndPopup();
                 }
+                // static char buf[256] = "";
+                // ImGui::InputText("Card Name", buf, IM_ARRAYSIZE(buf));
+                // if (ImGui::Button("Add Card")) {
+                //     user.addCard(buf, 0);
+                // }
 
                 ImGui::End();
             }
         }
+
+        // Show demo window for inspiration
+        ImGui::ShowDemoWindow(); 
 
         // Rendering
         ImGui::Render();
@@ -131,6 +153,11 @@ int Application::run() {
     }
 
     return m_exit_status;
+}
+
+void Application::popUpAddCard() {
+   
+
 }
 
 void Application::stop() 
