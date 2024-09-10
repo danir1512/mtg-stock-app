@@ -128,15 +128,58 @@ int Application::run() {
                 ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
                 if (ImGui::BeginPopupModal("Add Card", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                    static char buf[256] = "";
-                    ImGui::InputText("Card Name", buf, IM_ARRAYSIZE(buf));
+                      static const char* options[] = {
+                        "Teferi, Hero of Dominaria",
+                        "Nicol Bolas, the Ravager",
+                        "Nissa, Who Shakes the World",
+                        "Chandra, Awakened Inferno"
+                    };
+                    // State
+                    static char input[32]{ "" };
+
+                    // Code
+                    const bool is_input_text_enter_pressed = ImGui::InputText("##input", input, sizeof(input), ImGuiInputTextFlags_EnterReturnsTrue);
+                    const bool is_input_text_active = ImGui::IsItemActive();
+                    const bool is_input_text_activated = ImGui::IsItemActivated();
+
+                    if (is_input_text_activated)
+                        ImGui::OpenPopup("##popup");
+
+                    {
+                        ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
+                        //ImGui::SetNextWindowSize({ ImGui::GetItemRectSize().x, 0 });
+                        if (ImGui::BeginPopup("##popup", ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_ChildWindow))
+                        {
+                            // static const char* options[] = { "cats", "dogs", "rabbits", "turtles" };
+
+                            for (int i = 0; i < IM_ARRAYSIZE(options); i++)
+                            {
+                                if (strstr(options[i], input) == NULL)
+                                continue;
+                                if (ImGui::Selectable(options[i]))
+                                {
+                                    strcpy(input, options[i]);
+                                }
+                            }
+
+                            if (is_input_text_enter_pressed || (!is_input_text_active && !ImGui::IsWindowFocused()))
+                                ImGui::CloseCurrentPopup();
+
+                            ImGui::EndPopup();
+                        }
+                    }
+                    
                     if (ImGui::Button("Add Card")) {
-                        user.addCard(buf, 0);
+                        user.addCard(input, 0);
+                        
                         ImGui::CloseCurrentPopup();
                     }
+
                     if(ImGui::Button("Cancel")) {
+                        
                         ImGui::CloseCurrentPopup();  
                     }
+
                     ImGui::EndPopup();
                 }
                 // static char buf[256] = "";
