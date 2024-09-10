@@ -98,10 +98,29 @@ int Application::run() {
                 
                 ImGui::Begin("Collection", &m_show_some_panel);
                 ImGui::Text("User: %s", user.getUserName().c_str());
-                for (const auto& card : user.getCollection()) {
-                    ImGui::Text("%s", card.name.c_str());
+                ImGui::Separator();
+
+                static ImGuiTableFlags flags =
+                    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable;
+
+                if(ImGui::BeginTable("table_advanced", 2, flags, ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + 7 ), 0.0f)) 
+                {
+                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("Price",ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableHeadersRow();
+
+                    for (const auto& card : user.getCollection()) {
+                        ImGui::TableNextRow(ImGuiTableRowFlags_None, 0.0F);
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::TextUnformatted(card.name.c_str());
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextUnformatted(std::to_string(card.value).c_str());
+                    }
+
+                    ImGui::EndTable();                 
                 }
-                
+
+            
                 if (ImGui::Button("Add Card"))
                     ImGui::OpenPopup("Add Card");
                 
