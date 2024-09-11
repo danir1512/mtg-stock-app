@@ -4,7 +4,7 @@
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <imgui.h>
-#include "user.hpp"
+
 
 Application::Application() {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -20,6 +20,7 @@ Application::~Application() {
 }
 
 int Application::run() {
+
     if(m_exit_status == 1) {
         ImGui_ImplSDLRenderer_Shutdown();
         ImGui_ImplSDL2_Shutdown();
@@ -100,88 +101,13 @@ int Application::run() {
                 ImGui::Text("User: %s", user.getUserName().c_str());
                 ImGui::Separator();
 
-                static ImGuiTableFlags flags =
-                    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable;
-
-                if(ImGui::BeginTable("table_advanced", 2, flags, ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + 7 ), 0.0f)) 
-                {
-                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableSetupColumn("Price",ImGuiTableColumnFlags_WidthStretch);
-                    ImGui::TableHeadersRow();
-
-                    for (const auto& card : user.getCollection()) {
-                        ImGui::TableNextRow(ImGuiTableRowFlags_None, 0.0F);
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::TextUnformatted(card.name.c_str());
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::TextUnformatted(std::to_string(card.value).c_str());
-                    }
-
-                    ImGui::EndTable();                 
-                }
-
+                // Show table with the user collection
+                displayUserCollection(user);
             
                 if (ImGui::Button("Add Card"))
                     ImGui::OpenPopup("Add Card");
                 
-                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-                if (ImGui::BeginPopupModal("Add Card", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                      static const char* options[] = {
-                        "Teferi, Hero of Dominaria",
-                        "Nicol Bolas, the Ravager",
-                        "Nissa, Who Shakes the World",
-                        "Chandra, Awakened Inferno"
-                    };
-                    // State
-                    static char input[32]{ "" };
-
-                    // Code
-                    const bool is_input_text_enter_pressed = ImGui::InputText("##input", input, sizeof(input), ImGuiInputTextFlags_EnterReturnsTrue);
-                    const bool is_input_text_active = ImGui::IsItemActive();
-                    const bool is_input_text_activated = ImGui::IsItemActivated();
-
-                    if (is_input_text_activated)
-                        ImGui::OpenPopup("##popup");
-
-                    {
-                        ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
-                        //ImGui::SetNextWindowSize({ ImGui::GetItemRectSize().x, 0 });
-                        if (ImGui::BeginPopup("##popup", ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_ChildWindow))
-                        {
-                            // static const char* options[] = { "cats", "dogs", "rabbits", "turtles" };
-
-                            for (int i = 0; i < IM_ARRAYSIZE(options); i++)
-                            {
-                                if (strstr(options[i], input) == NULL)
-                                continue;
-                                if (ImGui::Selectable(options[i]))
-                                {
-                                    strcpy(input, options[i]);
-                                }
-                            }
-
-                            if (is_input_text_enter_pressed || (!is_input_text_active && !ImGui::IsWindowFocused()))
-                                ImGui::CloseCurrentPopup();
-
-                            ImGui::EndPopup();
-                        }
-                    }
-                    
-                    if (ImGui::Button("Add Card")) {
-                        user.addCard(input, 0);
-                        
-                        ImGui::CloseCurrentPopup();
-                    }
-
-                    if(ImGui::Button("Cancel")) {
-                        
-                        ImGui::CloseCurrentPopup();  
-                    }
-
-                    ImGui::EndPopup();
-                }
+               
                 // static char buf[256] = "";
                 // ImGui::InputText("Card Name", buf, IM_ARRAYSIZE(buf));
                 // if (ImGui::Button("Add Card")) {
@@ -217,8 +143,88 @@ int Application::run() {
     return m_exit_status;
 }
 
-void Application::popUpAddCard() {
-   
+void Application::displayUserCollection(const User& user) 
+{
+    static ImGuiTableFlags flags =
+                    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable;
+
+    if(ImGui::BeginTable("table_advanced", 2, flags, ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + 7 ), 0.0f)) 
+    {
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Price",ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+
+        for (const auto& card : user.getCollection()) {
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, 0.0F);
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextUnformatted(card.name.c_str());
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextUnformatted(std::to_string(card.value).c_str());
+        }
+
+        ImGui::EndTable();                 
+    }
+}
+
+void Application::popUpAddCard(const User& user) {
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Add Card", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            static const char* options[] = {
+            "Teferi, Hero of Dominaria",
+            "Nicol Bolas, the Ravager",
+            "Nissa, Who Shakes the World",
+            "Chandra, Awakened Inferno"
+        };
+        // State
+        static char input[32]{ "" };
+
+        // Code
+        const bool is_input_text_enter_pressed = ImGui::InputText("##input", input, sizeof(input), ImGuiInputTextFlags_EnterReturnsTrue);
+        const bool is_input_text_active = ImGui::IsItemActive();
+        const bool is_input_text_activated = ImGui::IsItemActivated();
+
+        if (is_input_text_activated)
+            ImGui::OpenPopup("##popup");
+
+        {
+            ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
+            //ImGui::SetNextWindowSize({ ImGui::GetItemRectSize().x, 0 });
+            if (ImGui::BeginPopup("##popup", ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_ChildWindow))
+            {
+                // static const char* options[] = { "cats", "dogs", "rabbits", "turtles" };
+
+                for (int i = 0; i < IM_ARRAYSIZE(options); i++)
+                {
+                    if (strstr(options[i], input) == NULL)
+                    continue;
+                    if (ImGui::Selectable(options[i]))
+                    {
+                        strcpy(input, options[i]);
+                    }
+                }
+
+                if (is_input_text_enter_pressed || (!is_input_text_active && !ImGui::IsWindowFocused()))
+                    ImGui::CloseCurrentPopup();
+
+                ImGui::EndPopup();
+            }
+        }
+        
+        if (ImGui::Button("Add Card")) {
+            user.addCard(input, 0);
+            
+            ImGui::CloseCurrentPopup();
+        }
+
+        if(ImGui::Button("Cancel")) {
+            
+            ImGui::CloseCurrentPopup();  
+        }
+
+        ImGui::EndPopup();
+    }
 
 }
 

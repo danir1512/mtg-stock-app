@@ -1,6 +1,7 @@
 #include <memory>
 #include "window.hpp"
 #include <SDL.h>
+#include "user.hpp"
 
 class Application {
     public:
@@ -15,7 +16,8 @@ class Application {
         void on_minimize();
         void on_shown();
         void on_close();
-        void popUpAddCard();
+        void popUpAddCard(const User& user);
+        void displayUserCollection(const User& user);
             
     private:
         bool m_running{true};
