@@ -1,8 +1,8 @@
 #include "application.hpp"
-
 #include <iostream>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
+#include <imgui-filebrowser/imfilebrowser.h>
 #include <imgui.h>
 
 
@@ -31,6 +31,9 @@ int Application::run() {
     //Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImGui::FileBrowser fileDialog;
+    fileDialog.SetTitle("Select a file");
+    fileDialog.SetTypeFilters({".txt"});
     ImGuiIO& io{ImGui::GetIO()};
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
@@ -43,6 +46,8 @@ int Application::run() {
     ImGui_ImplSDLRenderer_Init(m_window->get_native_renderer());
 
     User user{"sanson", "1234"};
+    user.loadCardsFromTxtFile("/home/ged1brg/Downloads/Deck - Izzet Phoenix.txt");
+
 
     m_running = true;
     while(m_running) 
@@ -76,9 +81,9 @@ int Application::run() {
 
             // Menu bar
             if(ImGui::BeginMainMenuBar()) {
-                if (ImGui::BeginMenu("File")) {
-                    if(ImGui::MenuItem("Exit")) {
-                        stop();
+                if (ImGui::BeginMenu("Collection")) {
+                    if(ImGui::MenuItem("Add Collection from file...")) {
+                        fileDialog.Open();
                     }
                     ImGui::EndMenu();
                 }
@@ -91,6 +96,14 @@ int Application::run() {
                 }
 
                 ImGui::EndMainMenuBar();
+            }
+
+            fileDialog.Display();
+
+            if(fileDialog.HasSelected()) {
+                //std::cout << "Selected file: " << fileDialog.GetSelected().string() << std::endl;
+                user.loadCardsFromTxtFile(fileDialog.GetSelected().string());
+                fileDialog.ClearSelected();
             }
             
             // Render "some panel".
@@ -106,13 +119,8 @@ int Application::run() {
             
                 if (ImGui::Button("Add Card"))
                     ImGui::OpenPopup("Add Card");
-                
-               
-                // static char buf[256] = "";
-                // ImGui::InputText("Card Name", buf, IM_ARRAYSIZE(buf));
-                // if (ImGui::Button("Add Card")) {
-                //     user.addCard(buf, 0);
-                // }
+
+                popUpAddCard(user);
 
                 ImGui::End();
             }
@@ -166,7 +174,7 @@ void Application::displayUserCollection(const User& user)
     }
 }
 
-void Application::popUpAddCard(const User& user) {
+void Application::popUpAddCard(User& user) {
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 

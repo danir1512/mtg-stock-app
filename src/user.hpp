@@ -1,4 +1,7 @@
 #include <string>
+#include <fstream> 
+#include <iostream> 
+#include <sstream>
 #include <vector>
 #include <memory>
 
@@ -18,6 +21,9 @@ class User {
         int removeCard(const std::string card);
         auto getCollection() const -> const Collection&;
         auto getUserName() const -> const std::string { return m_userName; }
+
+        // Load library
+        void loadCardsFromTxtFile(const std::string& fileName);
 
     private:
         std::shared_ptr<Collection> m_collection;

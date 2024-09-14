@@ -16,7 +16,7 @@ class Application {
         void on_minimize();
         void on_shown();
         void on_close();
-        void popUpAddCard(const User& user);
+        void popUpAddCard(User& user);
         void displayUserCollection(const User& user);
             
     private:

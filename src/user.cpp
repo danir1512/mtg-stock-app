@@ -33,3 +33,31 @@ int User::removeCard(const std::string card_name) {
 auto User::getCollection() const -> const Collection& {
     return *m_collection;
 }
+
+void User::loadCardsFromTxtFile(const std::string& fileName) {
+    std::ifstream inputFile(fileName);
+
+    if(!inputFile.is_open()) {
+        std::cerr << "Error: Could not open file: " << fileName << std::endl;
+        return;
+    }
+
+    std::string line, cardName, cardAmount;
+    while (getline(inputFile, line)) {
+
+        // Skip empty line from the sideboard
+        if(std::isspace(line[0])) {
+            continue;
+        }
+
+        std::istringstream iss(line);
+
+        iss >> cardAmount;
+        std::getline(iss, cardName, '\n');
+
+        cardName = cardName.substr(1); // remove leading space
+        addCard(cardName, std::stoi(cardAmount));
+    }
+
+    inputFile.close();
+}
