@@ -1,10 +1,7 @@
 #include "application.hpp"
-#include <iostream>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_sdlrenderer.h>
-#include <imgui-filebrowser/imfilebrowser.h>
-#include <imgui.h>
-
+#include <iostream>
 
 Application::Application() {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -13,6 +10,10 @@ Application::Application() {
     }
 
     m_window = std::make_unique<Window>(Window::Settings{"Hello, World!"});
+
+    loadFileBrowser.SetTypeFilters({".txt"});
+ 
+    user.loadCardsFromTxtFile("/home/ged1brg/Downloads/Deck - Izzet Phoenix.txt");
 }
 
 Application::~Application() {
@@ -31,11 +32,8 @@ int Application::run() {
     //Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui::FileBrowser fileDialog;
-    fileDialog.SetTitle("Select a file");
-    fileDialog.SetTypeFilters({".txt"});
-    ImGuiIO& io{ImGui::GetIO()};
 
+    ImGuiIO& io{ImGui::GetIO()};
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
     // Enable docking
@@ -44,10 +42,6 @@ int Application::run() {
     ImGui_ImplSDL2_InitForSDLRenderer(m_window->get_native_window(), m_window->get_native_renderer());
 
     ImGui_ImplSDLRenderer_Init(m_window->get_native_renderer());
-
-    User user{"sanson", "1234"};
-    user.loadCardsFromTxtFile("/home/ged1brg/Downloads/Deck - Izzet Phoenix.txt");
-
 
     m_running = true;
     while(m_running) 
@@ -75,6 +69,8 @@ int Application::run() {
 
         ImGui::NewFrame();
         
+        loadFileBrowser.SetTitle("Select a file");
+
         if(!m_minimized) {
              // This is all that needs to be added for this:
             ImGui::DockSpaceOverViewport();
@@ -83,8 +79,13 @@ int Application::run() {
             if(ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("Collection")) {
                     if(ImGui::MenuItem("Add Collection from file...")) {
-                        fileDialog.Open();
+                        loadFileBrowser.Open();
                     }
+
+                    if(ImGui::MenuItem("Save Collection to file...")) {
+                        saveFileBrowser.Open();
+                    }
+
                     ImGui::EndMenu();
                 }
                 
@@ -97,14 +98,9 @@ int Application::run() {
 
                 ImGui::EndMainMenuBar();
             }
-
-            fileDialog.Display();
-
-            if(fileDialog.HasSelected()) {
-                //std::cout << "Selected file: " << fileDialog.GetSelected().string() << std::endl;
-                user.loadCardsFromTxtFile(fileDialog.GetSelected().string());
-                fileDialog.ClearSelected();
-            }
+            
+            // Handles which file to load and its functions
+            fileExplorerHandler();
             
             // Render "some panel".
             if (m_show_some_panel) {
@@ -174,17 +170,12 @@ void Application::displayUserCollection(const User& user)
     }
 }
 
-void Application::popUpAddCard(User& user) {
+void Application::popUpAddCard(User& user) 
+{
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
     if (ImGui::BeginPopupModal("Add Card", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            static const char* options[] = {
-            "Teferi, Hero of Dominaria",
-            "Nicol Bolas, the Ravager",
-            "Nissa, Who Shakes the World",
-            "Chandra, Awakened Inferno"
-        };
         // State
         static char input[32]{ "" };
 
@@ -201,7 +192,13 @@ void Application::popUpAddCard(User& user) {
             //ImGui::SetNextWindowSize({ ImGui::GetItemRectSize().x, 0 });
             if (ImGui::BeginPopup("##popup", ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_ChildWindow))
             {
-                // static const char* options[] = { "cats", "dogs", "rabbits", "turtles" };
+                //TODO: Have a list of cards to choose from a database
+                static const char* options[] = {
+                    "Teferi, Hero of Dominaria",
+                    "Nicol Bolas, the Ravager",
+                    "Nissa, Who Shakes the World",
+                    "Chandra, Awakened Inferno"
+                };
 
                 for (int i = 0; i < IM_ARRAYSIZE(options); i++)
                 {
@@ -262,4 +259,26 @@ void Application::on_shown() {
 
 void Application::on_close() {
   stop();
+}
+
+void Application::fileExplorerHandler() {
+    // display file dialog
+    loadFileBrowser.Display();
+
+    if(loadFileBrowser.HasSelected()) {
+        
+        dbg(loadFileBrowser.GetSelected().string());
+        dbg(loadFileBrowser.GetCurrentDirectory().string());
+        user.loadCardsFromTxtFile(loadFileBrowser.GetSelected().string());
+        loadFileBrowser.ClearSelected();
+    }
+
+    // display file dialog
+    saveFileBrowser.Display();
+
+    if(saveFileBrowser.HasSelected()) {
+        dbg(saveFileBrowser.GetSelected().string());
+        user.saveCollectionToTxtFile(saveFileBrowser.GetSelected().string());
+        saveFileBrowser.ClearSelected();
+    }
 }

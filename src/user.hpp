@@ -15,7 +15,10 @@ using Collection = std::vector<Card>;
 class User {
     public:
 
+        User() = default;
+ 
         User(const std::string userName, const std::string password);
+        
 
         int addCard(const std::string card_name, int price);
         int removeCard(const std::string card);
@@ -25,8 +28,13 @@ class User {
         // Load library
         void loadCardsFromTxtFile(const std::string& fileName);
 
-    private:
-        std::shared_ptr<Collection> m_collection;
+        // Save library
+        void saveCollectionToTxtFile(const std::string& filename);
+
         std::string m_userName;
         std::string m_password;
+
+    private:
+        std::shared_ptr<Collection> m_collection;
+       
 };

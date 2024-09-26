@@ -1,16 +1,9 @@
 #include "user.hpp"
-
+#include "dbg.h"
 #include <algorithm>
 
 User::User(const std::string userName, const std::string password) : m_userName(userName), m_password(password) {
     m_collection = std::make_shared<Collection>();
-    addCard("Teferi, Hero of Dominaria", 20);
-    addCard("Nicol Bolas, the Ravager", 45);
-    addCard("Nissa, Who Shakes the World", 70);
-    addCard("Chandra, Awakened Inferno", 80);
-    addCard("Sorin, Imperious Bloodlord", 98);
-    addCard("Ajani, Strength of the Pride", 90);
-    addCard("Mu Yanling, Sky Dancer", 80);
 };
 
 int User::addCard(const std::string card_name, int price) {
@@ -38,6 +31,7 @@ void User::loadCardsFromTxtFile(const std::string& fileName) {
     std::ifstream inputFile(fileName);
 
     if(!inputFile.is_open()) {
+        //TODO: Add logging display popup
         std::cerr << "Error: Could not open file: " << fileName << std::endl;
         return;
     }
@@ -60,4 +54,26 @@ void User::loadCardsFromTxtFile(const std::string& fileName) {
     }
 
     inputFile.close();
+}
+
+void User::saveCollectionToTxtFile(const std::string& fileName) {
+
+    auto new_file_name = fileName;
+
+    if (!(new_file_name.rfind(".txt") == (new_file_name.size() - std::string(".txt").size()))) {
+        dbg("File extension is not .txt!!!! Adding .txt to the end of the file name");
+        new_file_name += ".txt";
+    }
+
+    std::ofstream outputFile(new_file_name);
+
+    if(!outputFile.is_open()) {
+        std::cerr << "Error: Could not open file: " << new_file_name << std::endl;
+    }
+
+    for(const auto& card : *m_collection) {
+        outputFile << card.value << ";" << card.name << std::endl;
+    }
+    
+    outputFile.close();
 }

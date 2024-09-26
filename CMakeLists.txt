@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(vendor)
 
 add_executable(${NAME} src/main.cpp src/application.cpp src/application.hpp src/window.hpp src/window.cpp
-                        src/user.cpp src/user.hpp imgui-filebrowser/imfilebrowser.h)
+                        src/user.cpp src/user.hpp imgui-filebrowser/imfilebrowser.h dbg.h)
 
 target_include_directories(${NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(${NAME} PRIVATE cxx_std_20)
