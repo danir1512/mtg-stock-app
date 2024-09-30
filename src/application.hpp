@@ -21,8 +21,10 @@ class Application {
         void on_minimize();
         void on_shown();
         void on_close();
-        void popUpAddCard(User& user);
-        void displayUserCollection(const User& user);
+        
+        void displayUserCollection();
+
+        void addCardHandler();
         void fileExplorerHandler();
             
     private:
@@ -31,11 +33,12 @@ class Application {
 
         std::unique_ptr<Window> m_window{nullptr};
 
-        User user{"Dani", "1234"};
+        User m_user{"Dani", "1234"};
 
-        ImGui::FileBrowser saveFileBrowser{ImGuiFileBrowserFlags_EnterNewFilename};
-        ImGui::FileBrowser loadFileBrowser;
+        ImGui::FileBrowser m_saveFileBrowser{ImGuiFileBrowserFlags_EnterNewFilename};
+        ImGui::FileBrowser m_loadFileBrowser;
 
-        bool m_show_some_panel{true};
+        bool m_show_collection{true};
+        bool m_show_decks{false};
         bool m_minimized{false};
 };

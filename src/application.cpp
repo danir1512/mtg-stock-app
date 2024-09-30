@@ -9,15 +9,47 @@ Application::Application() {
         m_exit_status = 1;
     }
 
-    m_window = std::make_unique<Window>(Window::Settings{"Hello, World!"});
+    m_window = std::make_unique<Window>(Window::Settings{"MTG Stock App" + std::string(" - ") + m_user.getUserName()});
 
-    loadFileBrowser.SetTypeFilters({".txt"});
- 
-    user.loadCardsFromTxtFile("/home/ged1brg/Downloads/Deck - Izzet Phoenix.txt");
+    // TODO: Add sign in page
+
+    m_loadFileBrowser.SetTypeFilters({".txt"});
+    m_loadFileBrowser.SetTitle("Select a file");
+
+    // Test
+    m_user.loadCardsFromTxtFile("/home/ged1brg/Downloads/Deck - Izzet Phoenix.txt");
 }
 
 Application::~Application() {
     SDL_Quit();
+}
+
+void Application::stop() 
+{
+    m_running = false;
+}
+
+void Application::on_event(const SDL_WindowEvent& event) {
+    switch (event.event) {
+    case SDL_WINDOWEVENT_CLOSE:
+      return on_close();
+    case SDL_WINDOWEVENT_MINIMIZED:
+      return on_minimize();
+    case SDL_WINDOWEVENT_SHOWN:
+      return on_shown();
+  }
+}
+
+void Application::on_minimize() {
+  m_minimized = true;
+}
+
+void Application::on_shown() {
+  m_minimized = false;
+}
+
+void Application::on_close() {
+  stop();
 }
 
 int Application::run() {
@@ -44,8 +76,11 @@ int Application::run() {
     ImGui_ImplSDLRenderer_Init(m_window->get_native_renderer());
 
     m_running = true;
+
+    // Handle events
     while(m_running) 
     {
+        // Handle event from user
         SDL_Event event{};
         while(SDL_PollEvent(&event) == 1) 
         {
@@ -68,22 +103,19 @@ int Application::run() {
         ImGui_ImplSDL2_NewFrame();
 
         ImGui::NewFrame();
-        
-        loadFileBrowser.SetTitle("Select a file");
 
         if(!m_minimized) {
-             // This is all that needs to be added for this:
             ImGui::DockSpaceOverViewport();
-
+            
             // Menu bar
             if(ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("Collection")) {
                     if(ImGui::MenuItem("Add Collection from file...")) {
-                        loadFileBrowser.Open();
+                        m_loadFileBrowser.Open();
                     }
 
                     if(ImGui::MenuItem("Save Collection to file...")) {
-                        saveFileBrowser.Open();
+                        m_saveFileBrowser.Open();
                     }
 
                     ImGui::EndMenu();
@@ -91,35 +123,40 @@ int Application::run() {
                 
                 if (ImGui::BeginMenu("View")) {
                     ImGui::MenuItem(
-                        "Some Panel", nullptr, &m_show_some_panel
+                        "Collection", nullptr, &m_show_collection
                     );
+                    ImGui::MenuItem("Decks", nullptr, nullptr);
                     ImGui::EndMenu();
                 }
 
                 ImGui::EndMainMenuBar();
             }
             
+           
             // Handles which file to load and its functions
             fileExplorerHandler();
             
             // Render "some panel".
-            if (m_show_some_panel) {
-                //TODO: Change to string in the future
-                
-                ImGui::Begin("Collection", &m_show_some_panel);
-                ImGui::Text("User: %s", user.getUserName().c_str());
-                ImGui::Separator();
+            if (m_show_collection) {
+                ImGui::Begin("Collection", &m_show_collection);
 
                 // Show table with the user collection
-                displayUserCollection(user);
-            
+                displayUserCollection();
+                
                 if (ImGui::Button("Add Card"))
                     ImGui::OpenPopup("Add Card");
 
-                popUpAddCard(user);
+                addCardHandler();
 
                 ImGui::End();
             }
+
+            if (ImGui::Begin("Decks", nullptr)) {
+                ImGui::Text("This is a test");
+                ImGui::End();
+            }
+
+             
         }
 
         // Show demo window for inspiration
@@ -127,7 +164,7 @@ int Application::run() {
 
         // Rendering
         ImGui::Render();
-
+        
         SDL_SetRenderDrawColor(
             m_window->get_native_renderer(),
             // Gray clear color (rgba)
@@ -147,30 +184,35 @@ int Application::run() {
     return m_exit_status;
 }
 
-void Application::displayUserCollection(const User& user) 
+void Application::displayUserCollection() 
 {
     static ImGuiTableFlags flags =
                     ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable;
 
-    if(ImGui::BeginTable("table_advanced", 2, flags, ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + 7 ), 0.0f)) 
+    if(ImGui::BeginTable("table_advanced", 3, flags, ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + 7 ), 0.0f)) 
     {
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Price",ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Quantity", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
 
-        for (const auto& card : user.getCollection()) {
+        for (const auto& card : m_user.getCollection()) {
             ImGui::TableNextRow(ImGuiTableRowFlags_None, 0.0F);
             ImGui::TableSetColumnIndex(0);
             ImGui::TextUnformatted(card.name.c_str());
             ImGui::TableSetColumnIndex(1);
             ImGui::TextUnformatted(std::to_string(card.value).c_str());
+            ImGui::TableSetColumnIndex(2);
+            ImGui::TextUnformatted(std::to_string(1).c_str());
         }
 
         ImGui::EndTable();                 
     }
 }
 
-void Application::popUpAddCard(User& user) 
+/// Handlers ///
+
+void Application::addCardHandler() 
 {
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -218,7 +260,7 @@ void Application::popUpAddCard(User& user)
         }
         
         if (ImGui::Button("Add Card")) {
-            user.addCard(input, 0);
+            m_user.addCard(input, 0);
             
             ImGui::CloseCurrentPopup();
         }
@@ -233,52 +275,24 @@ void Application::popUpAddCard(User& user)
 
 }
 
-void Application::stop() 
-{
-    m_running = false;
-}
-
-void Application::on_event(const SDL_WindowEvent& event) {
-    switch (event.event) {
-    case SDL_WINDOWEVENT_CLOSE:
-      return on_close();
-    case SDL_WINDOWEVENT_MINIMIZED:
-      return on_minimize();
-    case SDL_WINDOWEVENT_SHOWN:
-      return on_shown();
-  }
-}
-
-void Application::on_minimize() {
-  m_minimized = true;
-}
-
-void Application::on_shown() {
-  m_minimized = false;
-}
-
-void Application::on_close() {
-  stop();
-}
-
 void Application::fileExplorerHandler() {
     // display file dialog
-    loadFileBrowser.Display();
+    m_loadFileBrowser.Display();
 
-    if(loadFileBrowser.HasSelected()) {
+    if(m_loadFileBrowser.HasSelected()) {
         
-        dbg(loadFileBrowser.GetSelected().string());
-        dbg(loadFileBrowser.GetCurrentDirectory().string());
-        user.loadCardsFromTxtFile(loadFileBrowser.GetSelected().string());
-        loadFileBrowser.ClearSelected();
+        dbg(m_loadFileBrowser.GetSelected().string());
+        dbg(m_loadFileBrowser.GetCurrentDirectory().string());
+        m_user.loadCardsFromTxtFile(m_loadFileBrowser.GetSelected().string());
+        m_loadFileBrowser.ClearSelected();
     }
 
     // display file dialog
-    saveFileBrowser.Display();
+    m_saveFileBrowser.Display();
 
-    if(saveFileBrowser.HasSelected()) {
-        dbg(saveFileBrowser.GetSelected().string());
-        user.saveCollectionToTxtFile(saveFileBrowser.GetSelected().string());
-        saveFileBrowser.ClearSelected();
+    if(m_saveFileBrowser.HasSelected()) {
+        dbg(m_saveFileBrowser.GetSelected().string());
+        m_user.saveCollectionToTxtFile(m_saveFileBrowser.GetSelected().string());
+        m_saveFileBrowser.ClearSelected();
     }
 }

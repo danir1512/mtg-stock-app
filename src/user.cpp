@@ -23,10 +23,6 @@ int User::removeCard(const std::string card_name) {
     }
 }
 
-auto User::getCollection() const -> const Collection& {
-    return *m_collection;
-}
-
 void User::loadCardsFromTxtFile(const std::string& fileName) {
     std::ifstream inputFile(fileName);
 
@@ -56,7 +52,7 @@ void User::loadCardsFromTxtFile(const std::string& fileName) {
     inputFile.close();
 }
 
-void User::saveCollectionToTxtFile(const std::string& fileName) {
+void User::saveCollectionToTxtFile(const std::string& fileName) const {
 
     auto new_file_name = fileName;
 
@@ -76,4 +72,12 @@ void User::saveCollectionToTxtFile(const std::string& fileName) {
     }
     
     outputFile.close();
+}
+
+void User::createNewDeck(const std::string deckName, const std::string format) {
+    m_decks.emplace_back(Deck{deckName, format});
+}
+
+void User::addNewCardsToDeck(const std::string cardName) {
+    
 }
