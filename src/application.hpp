@@ -41,6 +41,6 @@ class Application {
         ImGui::FileBrowser m_loadFileBrowser;
 
         bool m_show_collection{true};
-        bool m_show_decks{false};
+        bool m_show_decks{true};
         bool m_minimized{false};
 };

@@ -3,6 +3,81 @@
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <iostream>
 
+enum CardTypes {
+    CREATURE,
+    SPELL,
+    LAND,
+    ENCHANTMENTS,
+    ARTIFACT,
+    PLANESWALKER
+} ;
+
+static const CardTypes All[] = {CREATURE, SPELL, LAND, ENCHANTMENTS, ARTIFACT, PLANESWALKER};
+
+//TODO: Move this to a different file and applu som design patterns
+auto getCardType(CardTypes card_type) -> std::string {
+    switch(card_type) {
+        case CREATURE:
+            return "Creature";
+        case SPELL:
+            return "Spell";
+        case LAND:
+            return "Land";
+        case ENCHANTMENTS:
+            return "Enchantment";
+        case ARTIFACT:
+            return "Artifact";
+        case PLANESWALKER:
+            return "Planeswalker";
+    }
+}
+
+void displayDeckSection(User& user) 
+{
+    float rows_height = ImGui::GetTextLineHeightWithSpacing() * 2;
+    if (ImGui::BeginTable("table_nested2", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable))
+    {
+        ImGui::TableSetupColumn("Name");
+        ImGui::TableSetupColumn("Quantity");
+        ImGui::TableHeadersRow();
+
+        for(const auto card : user.getDeck("UB Murktide").getCards()) {
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
+            ImGui::TableNextColumn();
+            ImGui::Text(card.name.c_str());
+            ImGui::TableNextColumn();
+            ImGui::Text(std::to_string(card.value).c_str());
+
+        }
+
+        ImGui::EndTable();
+    }
+
+}
+
+/// Helper Functions - This one should be in a different file later///
+void Application::displayUserDeck(const std::string deck_name) 
+{
+    if(ImGui::BeginTable("table_nested1", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable))
+    {
+        ImGui::TableSetupColumn("Mainboard");
+        ImGui::TableSetupColumn("Sideboard");
+        ImGui::TableHeadersRow();
+
+        ImGui::TableNextColumn();
+
+        for(const auto cardTypeName : All) {
+            ImGui::Text(getCardType(cardTypeName).c_str());
+            {
+                displayDeckSection(m_user);
+            }
+        }
+
+        ImGui::EndTable();
+    }
+}
+
+
 Application::Application() {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         std::cerr << "Error: " << SDL_GetError() <<std::endl;
@@ -24,7 +99,9 @@ Application::Application() {
     m_user.getDeck("Deck - Izzet Phoenix").addNewCardsToDeck("Arclight Phoenix", 4);
 
     m_user.createNewDeck("UB Murktide", "Modern");
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Murktide Regent", 3);
     m_user.getDeck("UB Murktide").addNewCardsToDeck("Murktide Regent", 4);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Tamiyo", 4);
 }
 
 Application::~Application() {
@@ -161,7 +238,7 @@ int Application::run() {
             if(m_show_decks){
                 ImGui::Begin("Decks", &m_show_decks);
 
-                
+                displayUserDeck("UB Murktide");
 
                 ImGui::Text("This is a test");
                 ImGui::End();
@@ -194,28 +271,7 @@ int Application::run() {
     return m_exit_status;
 }
 
-void Application::displayUserDeck(const std::string deck_name) 
-{
-    static ImGuiTableFlags flags =
-                    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable;
 
-    if(ImGui::BeginTable("table_advanced", 2, flags, ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + 7 ), 0.0f)) 
-    {
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Quantity", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableHeadersRow();
-
-        for (const auto& card : m_user.getDeck(deck_name).getCards()) {
-            ImGui::TableNextRow(ImGuiTableRowFlags_None, 0.0F);
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextUnformatted(card.name.c_str());
-            ImGui::TableSetColumnIndex(1);
-            ImGui::TextUnformatted(std::to_string(card.value).c_str());
-        }
-
-        ImGui::EndTable();                 
-    }
-}
 
 void Application::displayUserCollection() 
 {
