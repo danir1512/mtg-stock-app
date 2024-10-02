@@ -18,6 +18,13 @@ Application::Application() {
 
     // Test
     m_user.loadCardsFromTxtFile("/home/ged1brg/Downloads/Deck - Izzet Phoenix.txt");
+
+    
+    m_user.createNewDeck("Deck - Izzet Phoenix", "Standard");
+    m_user.getDeck("Deck - Izzet Phoenix").addNewCardsToDeck("Arclight Phoenix", 4);
+
+    m_user.createNewDeck("UB Murktide", "Modern");
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Murktide Regent", 4);
 }
 
 Application::~Application() {
@@ -122,10 +129,10 @@ int Application::run() {
                 }
                 
                 if (ImGui::BeginMenu("View")) {
-                    ImGui::MenuItem(
-                        "Collection", nullptr, &m_show_collection
-                    );
-                    ImGui::MenuItem("Decks", nullptr, nullptr);
+                    ImGui::MenuItem("Collection", nullptr, &m_show_collection);
+
+                    ImGui::MenuItem("Decks", nullptr, &m_show_decks);
+
                     ImGui::EndMenu();
                 }
 
@@ -151,12 +158,14 @@ int Application::run() {
                 ImGui::End();
             }
 
-            if (ImGui::Begin("Decks", nullptr)) {
+            if(m_show_decks){
+                ImGui::Begin("Decks", &m_show_decks);
+
+                
+
                 ImGui::Text("This is a test");
                 ImGui::End();
             }
-
-             
         }
 
         // Show demo window for inspiration
@@ -179,9 +188,33 @@ int Application::run() {
         );
 
         SDL_RenderPresent(m_window->get_native_renderer());
+
     }
 
     return m_exit_status;
+}
+
+void Application::displayUserDeck(const std::string deck_name) 
+{
+    static ImGuiTableFlags flags =
+                    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable;
+
+    if(ImGui::BeginTable("table_advanced", 2, flags, ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + 7 ), 0.0f)) 
+    {
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Quantity", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableHeadersRow();
+
+        for (const auto& card : m_user.getDeck(deck_name).getCards()) {
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, 0.0F);
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextUnformatted(card.name.c_str());
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextUnformatted(std::to_string(card.value).c_str());
+        }
+
+        ImGui::EndTable();                 
+    }
 }
 
 void Application::displayUserCollection() 

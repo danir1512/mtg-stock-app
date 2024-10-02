@@ -13,8 +13,14 @@ struct Card {
 class Deck {
     public:
         Deck(const std::string deckName, const std::string format) : name(deckName), format(format) {}
-    
 
+        void addNewCardsToDeck(const std::string cardName, int cardAmount);
+
+        void displayDeck(const std::string deck_name) const;
+
+        auto getName() const -> std::string const {return name;}
+
+        auto getCards() -> std::vector<Card> const {return cards;}
 
     private:
         std::string name;
@@ -38,6 +44,26 @@ class User {
 
         // Get const reference to User card collection
         auto getCollection() const -> const Collection& { return *m_collection; }
+
+        auto getDecksName() const -> std::vector<std::string> {
+            std::vector<std::string> decks;
+            for(const auto& deck : m_decks) {
+                decks.push_back(deck->getName());
+            }
+            return decks;
+        }
+
+        auto getDeck(const std::string deck_name) -> Deck& {
+            auto deckIter = std::find_if(m_decks.begin(), m_decks.end(), [deck_name](const auto deck) {
+                return deck->getName() == deck_name;
+            });
+
+            if (deckIter != m_decks.end()) {
+                return **deckIter;
+            } else {
+                throw std::runtime_error("Deck not found");
+            }
+        }
 
         // Get user password
         auto getPassword() const -> const std::string { return m_password; }
@@ -66,9 +92,6 @@ class User {
 
         // Create a new deck
         void createNewDeck(const std::string deckName, const std::string format);
-
-        // Void Add new card to deck
-        void addNewCardsToDeck(const std::string deckName, const std::string cardName, int cardAmount);
 
     private:
         std::string m_userName;

@@ -24,6 +24,8 @@ class Application {
         
         void displayUserCollection();
 
+        void displayUserDeck(const std::string deck_name);
+
         void addCardHandler();
         void fileExplorerHandler();
             

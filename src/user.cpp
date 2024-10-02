@@ -75,9 +75,26 @@ void User::saveCollectionToTxtFile(const std::string& fileName) const {
 }
 
 void User::createNewDeck(const std::string deckName, const std::string format) {
-    m_decks.emplace_back(Deck{deckName, format});
+
+    m_decks.push_back(std::make_shared<Deck>(deckName, format));
 }
 
-void User::addNewCardsToDeck(const std::string cardName) {
-    
+void Deck::addNewCardsToDeck(const std::string cardName, int cardAmount) {
+
+    auto cardIter = std::find_if(cards.begin(), cards.end(), [cardName](const auto card) {
+        return card.name == cardName;
+    });
+
+    if (cardIter != cards.end()) {
+        cardIter->value++;
+    } else {
+        cards.emplace_back(Card{cardName, cardAmount});
+        
+    }
+}
+
+void Deck::displayDeck(const std::string deck_name) const {
+    for(const auto& card : cards) {
+        dbg(card.name);
+    }
 }
