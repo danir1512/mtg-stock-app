@@ -1,0 +1,29 @@
+4;Arclight Phoenix
+4;Consider
+3;Fiery Impulse
+1;Hall of Storm Giants
+3;Island
+1;Jwari Disruption
+4;Ledger Shredder
+4;Lightning Axe
+4;Opt
+1;Otawara, Soaring City
+4;Picklock Prankster
+3;Proft's Eidetic Memory
+4;Riverglide Pathway
+4;Sleight of Hand
+2;Spell Pierce
+4;Spirebluff Canal
+4;Steam Vents
+1;Stormcarved Coast
+1;Temur Battle Rage
+4;Treasure Cruise
+2;Aether Gust
+2;Anger of the Gods
+3;Mystical Dispute
+1;Negate
+1;Pithing Needle
+1;Storm's Wrath
+2;Thing in the Ice
+1;Torch the Tower
+2;Unlicensed Hearse
