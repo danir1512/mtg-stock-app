@@ -6,15 +6,15 @@ User::User(const std::string userName, const std::string password) : m_userName(
     m_collection = std::make_shared<Collection>();
 };
 
-int User::addCard(const std::string card_name, int price) {
+int User::addCard(const std::string card_name, CardTypes type ,int price) {
     //TODO: Cjeck if cards exist. Add if it does, otherwise return error.
-    m_collection->emplace_back(Card{card_name, price});
+    m_collection->emplace_back(Card{card_name, type, price});
     return 0;
 }
 
 int User::removeCard(const std::string card_name) {
     const auto iterCardIndex{std::find_if(m_collection->begin(), m_collection->end(), [card_name](const auto cardName) {
-        return cardName.name == card_name;
+        return cardName.m_name == card_name;
     })};
 
     if(iterCardIndex != m_collection->end()) {
@@ -46,7 +46,7 @@ void User::loadCardsFromTxtFile(const std::string& fileName) {
         std::getline(iss, cardName, '\n');
 
         cardName = cardName.substr(1); // remove leading space
-        addCard(cardName, std::stoi(cardAmount));
+        addCard(cardName, CardTypes::CREATURE ,std::stoi(cardAmount));
     }
 
     inputFile.close();
@@ -68,7 +68,7 @@ void User::saveCollectionToTxtFile(const std::string& fileName) const {
     }
 
     for(const auto& card : *m_collection) {
-        outputFile << card.value << ";" << card.name << std::endl;
+        outputFile << card.m_value << ";" << card.m_name << std::endl;
     }
     
     outputFile.close();
@@ -79,22 +79,22 @@ void User::createNewDeck(const std::string deckName, const std::string format) {
     m_decks.push_back(std::make_shared<Deck>(deckName, format));
 }
 
-void Deck::addNewCardsToDeck(const std::string cardName, int cardAmount) {
+void Deck::addNewCardsToDeck(const std::string cardName, CardTypes cardType, int cardAmount) {
 
     auto cardIter = std::find_if(cards.begin(), cards.end(), [cardName](const auto card) {
-        return card.name == cardName;
+        return card.m_name == cardName;
     });
 
     if (cardIter != cards.end()) {
-        cardIter->value++;
+        cardIter->m_value++;
     } else {
-        cards.emplace_back(Card{cardName, cardAmount});
+        cards.emplace_back(Card{cardName, cardType ,cardAmount});
         
     }
 }
 
 void Deck::displayDeck(const std::string deck_name) const {
     for(const auto& card : cards) {
-        dbg(card.name);
+        dbg(card.m_name);
     }
 }

@@ -1,0 +1,29 @@
+2;Bloodstained Mire;LAND
+1;Cling to Dust;SPELL
+4;Counterspell;SPELL
+2;Darkslick Shores;LAND
+4;Fatal Push;SPELL
+2;Flooded Strand;LAND
+3;Force of Negation;SPELL
+2;Harbinger of the Seas;CREATURE
+3;Island;LAND
+4;Murktide Regent;CREATURE
+4;Orcish Bowmasters;CREATURE
+4;Polluted Delta;LAND
+4;Preordain;SPELL
+4;Psychic Frog;CREATURE
+2;Shoot the Sheriff;SPELL
+2;Sink into Stupor;SPELL
+3;Spell Pierce;SPELL
+3;Spell Snare;SPELL
+1;Swamp;LAND
+1;Toxic Deluge;SPELL
+2;Undercity Sewers;LAND
+3;Watery Grave;LAND
+2;Break the Ice;SPELL
+3;Consign to Memory;SPELL
+1;Harbinger of the Seas;CREATURE
+3;Mystical Dispute;SPELL
+2;Nihil Spellbomb;ARTIFACT
+3;Stern Scolding;LAND
+1;Toxic Deluge;SPELL

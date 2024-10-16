@@ -3,17 +3,6 @@
 #include <backends/imgui_impl_sdlrenderer.h>
 #include <iostream>
 
-enum CardTypes {
-    CREATURE,
-    SPELL,
-    LAND,
-    ENCHANTMENTS,
-    ARTIFACT,
-    PLANESWALKER
-} ;
-
-static const CardTypes All[] = {CREATURE, SPELL, LAND, ENCHANTMENTS, ARTIFACT, PLANESWALKER};
-
 //TODO: Move this to a different file and applu som design patterns
 auto getCardType(CardTypes card_type) -> std::string {
     switch(card_type) {
@@ -32,7 +21,17 @@ auto getCardType(CardTypes card_type) -> std::string {
     }
 }
 
-void displayDeckSection(User& user) 
+auto getDeckCardTypes(Deck& deck) -> std::vector<CardTypes> {
+    std::vector<CardTypes> deckDardTypes;
+    for(const auto card : deck.getCards()) {
+        if(std::find(deckDardTypes.begin(), deckDardTypes.end(), card.m_type) == deckDardTypes.end()) {
+            deckDardTypes.push_back(card.m_type);
+        }
+    }
+    return deckDardTypes;
+}
+
+void displayDeckSection(User& user, std::string deck_name, CardTypes card_type)
 {
     float rows_height = ImGui::GetTextLineHeightWithSpacing() * 2;
     if (ImGui::BeginTable("table_nested2", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable))
@@ -41,18 +40,18 @@ void displayDeckSection(User& user)
         ImGui::TableSetupColumn("Quantity");
         ImGui::TableHeadersRow();
 
-        for(const auto card : user.getDeck("UB Murktide").getCards()) {
-            ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
-            ImGui::TableNextColumn();
-            ImGui::Text(card.name.c_str());
-            ImGui::TableNextColumn();
-            ImGui::Text(std::to_string(card.value).c_str());
-
+        for(const auto card : user.getDeck(deck_name).getCards()) {
+            if (card.m_type == card_type) {
+                ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
+                ImGui::TableNextColumn();
+                ImGui::Text(card.m_name.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text(std::to_string(card.m_value).c_str());
+            }
         }
 
         ImGui::EndTable();
     }
-
 }
 
 /// Helper Functions - This one should be in a different file later///
@@ -66,10 +65,11 @@ void Application::displayUserDeck(const std::string deck_name)
 
         ImGui::TableNextColumn();
 
-        for(const auto cardTypeName : All) {
+        const auto deckCardTypes = getDeckCardTypes(m_user.getDeck(deck_name));
+        for(const auto cardTypeName : deckCardTypes) {
             ImGui::Text(getCardType(cardTypeName).c_str());
             {
-                displayDeckSection(m_user);
+                displayDeckSection(m_user, deck_name, cardTypeName);
             }
         }
 
@@ -96,12 +96,16 @@ Application::Application() {
 
     
     m_user.createNewDeck("Deck - Izzet Phoenix", "Standard");
-    m_user.getDeck("Deck - Izzet Phoenix").addNewCardsToDeck("Arclight Phoenix", 4);
+    m_user.getDeck("Deck - Izzet Phoenix").addNewCardsToDeck("Arclight Phoenix", CardTypes::CREATURE ,4);
 
     m_user.createNewDeck("UB Murktide", "Modern");
-    m_user.getDeck("UB Murktide").addNewCardsToDeck("Murktide Regent", 3);
-    m_user.getDeck("UB Murktide").addNewCardsToDeck("Murktide Regent", 4);
-    m_user.getDeck("UB Murktide").addNewCardsToDeck("Tamiyo", 4);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Murktide Regent", CardTypes::CREATURE ,3);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Murktide Regent", CardTypes::CREATURE, 4);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Force of Negation", CardTypes::SPELL ,3);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Counterspell", CardTypes::SPELL ,4);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Polluted Delta", CardTypes::LAND ,4);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Watery Grave", CardTypes::LAND ,3);
+    m_user.getDeck("UB Murktide").addNewCardsToDeck("Island", CardTypes::LAND ,2);
 }
 
 Application::~Application() {
@@ -237,10 +241,17 @@ int Application::run() {
 
             if(m_show_decks){
                 ImGui::Begin("Decks", &m_show_decks);
+                
+                if(ImGui::TreeNode("Decks")) {
+                    for(const auto& deck : m_user.getDecksName()) {
+                        if(ImGui::TreeNode(deck.c_str())) {
+                            displayUserDeck(deck);
+                            ImGui::TreePop();
+                        }
+                    }
+                    ImGui::TreePop();
+                }
 
-                displayUserDeck("UB Murktide");
-
-                ImGui::Text("This is a test");
                 ImGui::End();
             }
         }
@@ -288,9 +299,9 @@ void Application::displayUserCollection()
         for (const auto& card : m_user.getCollection()) {
             ImGui::TableNextRow(ImGuiTableRowFlags_None, 0.0F);
             ImGui::TableSetColumnIndex(0);
-            ImGui::TextUnformatted(card.name.c_str());
+            ImGui::TextUnformatted(card.m_name.c_str());
             ImGui::TableSetColumnIndex(1);
-            ImGui::TextUnformatted(std::to_string(card.value).c_str());
+            ImGui::TextUnformatted(std::to_string(card.m_value).c_str());
             ImGui::TableSetColumnIndex(2);
             ImGui::TextUnformatted(std::to_string(1).c_str());
         }
@@ -349,7 +360,8 @@ void Application::addCardHandler()
         }
         
         if (ImGui::Button("Add Card")) {
-            m_user.addCard(input, 0);
+            //TODO: have a backend to filter the cards or something
+            m_user.addCard(input, CardTypes::CREATURE, 1);
             
             ImGui::CloseCurrentPopup();
         }

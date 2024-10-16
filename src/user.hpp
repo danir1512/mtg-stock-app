@@ -5,16 +5,32 @@
 #include <vector>
 #include <memory>
 
-struct Card {
-    std::string name;
-    int value;
+enum CardTypes {
+    CREATURE,
+    SPELL,
+    LAND,
+    ENCHANTMENTS,
+    ARTIFACT,
+    PLANESWALKER
+} ;
+
+static const CardTypes All[] = {CREATURE, SPELL, LAND, ENCHANTMENTS, ARTIFACT, PLANESWALKER};
+
+class Card {
+public:
+
+    Card(std::string name, CardTypes type, int value) : m_name(name), m_type(type), m_value(value) {}
+
+    std::string m_name;
+    CardTypes m_type;
+    int m_value;
 };
 
 class Deck {
     public:
         Deck(const std::string deckName, const std::string format) : name(deckName), format(format) {}
 
-        void addNewCardsToDeck(const std::string cardName, int cardAmount);
+        void addNewCardsToDeck(const std::string cardName, CardTypes cardType, int cardAmount);
 
         void displayDeck(const std::string deck_name) const;
 
@@ -78,7 +94,7 @@ class User {
         void setPassword(const std::string password) { m_password = password; }
 
         // Add card to user collection
-        int addCard(const std::string card_name, int price);
+        int addCard(const std::string card_name, CardTypes type ,int price);
 
         // Remove card from user collection
         int removeCard(const std::string card);
